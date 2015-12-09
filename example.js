@@ -33,7 +33,7 @@ var requestWithEncoding = function(options, callback) {
       } else if (encoding == 'deflate') {
         zlib.inflate(buffer, function(err, decoded) {
           callback(err, decoded && decoded.toString());
-        })
+        });
       } else {
         callback(null, buffer.toString());
       }
@@ -43,9 +43,9 @@ var requestWithEncoding = function(options, callback) {
   req.on('error', function(err) {
     callback(err);
   });
-}
+};
 
 requestWithEncoding(options, function(err, data) {
   if (err) console.log(err);
   else console.log(data);
-})
+});
