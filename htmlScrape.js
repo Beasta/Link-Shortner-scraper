@@ -1,9 +1,11 @@
+//Scraper will search a website for valid links that have been shortened. 
+//The 
 var request = require('request'),
   zlib = require('zlib'),
   fs = require('fs'),
   important = require('./importantstuff.js');
 
-var theDelay = 5;
+var theDelay = 3;
 var extension = "";
 
 var headers = {
@@ -29,7 +31,7 @@ var options = {
   headers: headers
 };
 
-var counter = 0;
+var counter = 599;
 
 var requestWithEncoding = function(options, callback) {
   console.log('counter',counter);
@@ -42,8 +44,8 @@ var requestWithEncoding = function(options, callback) {
   }
   console.log('extension:',extension);
   options.url = "http://" + important.site + "/" + extension; 
-  if(counter ===300){
-    console.log('counter has reached 300');
+  if(counter ===1100){
+    console.log('counter has reached '+counter);
     clearInterval(requestAll);
   }
   var req = request.get(options);
@@ -96,26 +98,34 @@ var requestWithEncoding = function(options, callback) {
 //   }
 // });
 
-var requestAll = setInterval(
-  // var newExtension = counter.toString(16);
-    requestWithEncoding(
+var theCall = function(){
+      requestWithEncoding(
         {
           method: 'GET',
           // url: "http://"+ important.site + "/" + (counter++).toString(16),
           headers: headers
-        },function(err, data) {
-    if (err) console.log('error',err);
-    else{
-      fs.writeFile("./pages/"+extension+".html", data, function(err) {
-        // console.log('response.id',JSON.parse(response).id);
-      // fs.writeFile("./pages/"+Math.floor(Math.random()*10000)/*process.argv[3]*/, response, function(err) {
-          if(err) {
-              return console.log('error saving file',err);
-          }
-          // console.log("The everything file was saved!");
-         // clearInterval(requestAll);
+        },
+        function(err, data) {
+          if (err) console.log('error',err);
+          else{
+            if( !(/Page Not Found/.test(data) ) ) {
+
+              fs.writeFile("./pages/"+extension+".html", data, function(err) {
+              // console.log('response.id',JSON.parse(response).id);
+              // fs.writeFile("./pages/"+Math.floor(Math.random()*10000)/*process.argv[3]*/, response, function(err) {
+                if(err) {
+                  return console.log('error saving file',err);
+                }
+              // console.log("The everything file was saved!");
+              // clearInterval(requestAll);
+              });
+            }
+        }
       });
-    }
-  }),
+};
+
+var requestAll = setInterval(
+  // var newExtension = counter.toString(16);
+    theCall,
   theDelay*1000
 );
