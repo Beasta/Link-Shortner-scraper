@@ -3,8 +3,8 @@ var request = require('request'),
   fs = require('fs'),
   important = require('./importantstuff.js');
 
-var theDelay = 2;
-var extension = 999;
+var theDelay = 5;
+var extension = "";
 
 var headers = {
 
@@ -29,12 +29,28 @@ var options = {
   headers: headers
 };
 
+var counter = 0;
+
 var requestWithEncoding = function(options, callback) {
+  console.log('counter',counter);
+  console.log('typeof callback',typeof callback);
+  extension = ( counter++ ).toString(16);
+  if (extension.length === 1){
+    extension = "00"+extension;
+  }else if(extension.length === 2){
+    extension = "0" + extension;
+  }
+  console.log('extension:',extension);
+  options.url = "http://" + important.site + "/" + extension; 
+  if(counter ===300){
+    console.log('counter has reached 300');
+    clearInterval(requestAll);
+  }
   var req = request.get(options);
 
   req.on('response', function(res) {
-    console.log('res.status:',res.statusCode);
-    console.log("headers?",res.headers);
+    // console.log('res.status:',res.statusCode);
+    // console.log("headers?",res.headers);
 
     var chunks = [];
     res.on('data', function(chunk) {
@@ -42,7 +58,7 @@ var requestWithEncoding = function(options, callback) {
     });
 
     res.on('end', function() {
-      console.log("headers?",res.headers);
+      // console.log("headers?",res.headers);
       var buffer = Buffer.concat(chunks);
       var encoding = res.headers['content-encoding'];
       if (encoding == 'gzip') {
@@ -65,19 +81,41 @@ var requestWithEncoding = function(options, callback) {
   });
 };
 
-requestWithEncoding(options, function(err, data) {
-  if (err) console.log(err);
-  else{
-    fs.writeFile("./pages/"+extension+".html", data, function(err) {
-      // console.log('response.id',JSON.parse(response).id);
-    // fs.writeFile("./pages/"+Math.floor(Math.random()*10000)/*process.argv[3]*/, response, function(err) {
-        if(err) {
-            return console.log('error saving file',err);
-        }
-        console.log("The everything file was saved!");
- //       clearInterval(requestAll);
-    });
-  }
-});
+// requestWithEncoding(options, function(err, data) {
+//   if (err) console.log('error',err);
+//   else{
+//     fs.writeFile("./pages/"+extension+".html", data, function(err) {
+//       // console.log('response.id',JSON.parse(response).id);
+//     // fs.writeFile("./pages/"+Math.floor(Math.random()*10000)/*process.argv[3]*/, response, function(err) {
+//         if(err) {
+//             return console.log('error saving file',err);
+//         }
+//         // console.log("The everything file was saved!");
+//        // clearInterval(requestAll);
+//     });
+//   }
+// });
 
-//var requestAll = setInterval(aRequest,theDelay*1000);
+var requestAll = setInterval(
+  // var newExtension = counter.toString(16);
+    requestWithEncoding(
+        {
+          method: 'GET',
+          // url: "http://"+ important.site + "/" + (counter++).toString(16),
+          headers: headers
+        },function(err, data) {
+    if (err) console.log('error',err);
+    else{
+      fs.writeFile("./pages/"+extension+".html", data, function(err) {
+        // console.log('response.id',JSON.parse(response).id);
+      // fs.writeFile("./pages/"+Math.floor(Math.random()*10000)/*process.argv[3]*/, response, function(err) {
+          if(err) {
+              return console.log('error saving file',err);
+          }
+          // console.log("The everything file was saved!");
+         // clearInterval(requestAll);
+      });
+    }
+  }),
+  theDelay*1000
+);
