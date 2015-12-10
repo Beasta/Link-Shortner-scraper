@@ -1,5 +1,4 @@
 module.exports = 
 {
-    'site' : "hr.gs"
-
+    'site' : "www.website.com" 
 }; 
